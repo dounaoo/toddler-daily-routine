@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>4岁宝宝作息时间表 · Routine Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Neubrutalism UI Style Core */
+        .thick-border { border: 4px solid #000000; }
+        .active-shadow { box-shadow: 4px 4px 0 0 #000000; }
+        .active-shadow-lg { box-shadow: 0 8px 0 0 #000000; }
+        
+        @keyframes bounceSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+        .animate-bounce-fluid { animation: bounceSlow 3s ease-in-out infinite; }
+        
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #F0F2F0; 
+            transition: background-color 0.5s ease;
+        }
+
+        body { 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+            overscroll-behavior-y: contain;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 100%; /* Fully responsive width */
+            margin: 0 auto;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background-color: #F8FAF9;
+            position: relative;
+        }
+
+        .card-transition {
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .completed { opacity: 0.4; filter: grayscale(0.6); transform: scale(0.98); }
+
+        /* Phrases container - Independent with 8px gap */
+        .phrases-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.3s;
+            opacity: 0;
+            z-index: 5;
+            position: relative;
+            margin-top: 8px; 
+        }
+        .phrases-container.expanded { 
+            max-height: 1000px; 
+            opacity: 1; 
+            padding-bottom: 8px; 
+        }
+        
+        /* Fixed Side Handle - Shrunk to 42px height */
+        .phrase-side-tab {
+            position: absolute;
+            left: -22px;
+            top: 0;
+            bottom: 0;
+            margin: auto 0;
+            width: 34px;
+            height: 42px; 
+            border: 3.5px solid black;
+            border-right: none;
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -4px 4px 0 0 black;
+            cursor: pointer;
+            z-index: 15; 
+            background-color: white;
+            transition: background-color 0.2s;
+        }
+        
+        @media (min-width: 640px) {
+            .phrase-side-tab {
+                left: -32px;
+                width: 42px;
+                height: 62px; 
+                border-width: 4px;
+                box-shadow: -6px 6px 0 0 black;
+            }
+        }
+
+        .phrase-side-tab:active {
+            background-color: #f1f5f9;
+        }
+
+        .round-time-btn {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2.5px solid black;
+            box-shadow: 2px 2px 0px black;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        @media (min-width: 640px) {
+            .round-time-btn {
+                width: 48px;
+                height: 48px;
+                border-width: 3.5px;
+            }
+        }
+        .round-time-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: none;
+            background-color: #A7F3D0; 
+        }
+
+        .unit-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 2.5px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 14px;
+            background: white;
+            box-shadow: 2px 2px 0px black;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        @media (min-width: 640px) {
+            .unit-btn {
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
+                border-width: 3.5px;
+                font-size: 20px;
+                box-shadow: 3px 3px 0px black;
+            }
+        }
+        .unit-btn.active {
+            background-color: #FCD34D; 
+            transform: translate(1.5px, 1.5px);
+            box-shadow: none;
+        }
+
+        .reset-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 2.5px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FEE2E2; 
+            box-shadow: 2px 2px 0px black;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        @media (min-width: 640px) {
+            .reset-btn {
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
+                border-width: 3.5px;
+                box-shadow: 3px 3px 0px black;
+            }
+        }
+        .reset-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: none;
+            background-color: #FECACA; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container shadow-2xl">
+        <div class="pt-[env(safe-area-inset-top,24px)] bg-white"></div>
+
+        <header class="bg-white px-4 py-4 sm:py-6 shrink-0 flex items-center justify-between border-b-4 border-slate-900 z-50 sticky top-0">
+            <div class="flex flex-col gap-0 min-w-0">
+                <div id="header-time" class="text-3xl sm:text-5xl font-black tabular-nums tracking-tighter text-slate-900 leading-none shrink-0">00:00</div>
+                <div class="flex items-center gap-2 mt-1 min-w-0">
+                    <span id="header-date" class="text-[10px] sm:text-lg font-bold text-slate-500 whitespace-nowrap overflow-hidden text-ellipsis">April 9th</span>
+                    <span id="header-day" class="text-[7px] sm:text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border-[1.5px] border-slate-900 bg-emerald-200 text-emerald-800 w-fit">Thursday</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button onclick="resetAllTimes()" class="reset-btn" title="Reset all">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="text-rose-600 sm:w-6 sm:h-6"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                </button>
+
+                <div class="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 rounded-2xl border-[3px] border-black">
+                    <button onclick="setStep(1)" id="step-1" class="unit-btn active">1</button>
+                    <button onclick="setStep(5)" id="step-5" class="unit-btn">5</button>
+                    <button onclick="setStep(10)" id="step-10" class="unit-btn">10</button>
+                </div>
+
+                <button onclick="toggleWeekendMode()" id="weekend-toggle" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border-[3px] border-slate-900 card-transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[3.5px_3.5px_0_0_#000] bg-emerald-100 shrink-0 ml-1 active:bg-emerald-200">
+                    <span class="text-[10px] sm:text-base font-black italic uppercase tracking-tighter">Weekend</span>
+                    <div id="toggle-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-900"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                    </div>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 sm:px-14 py-6 scroll-smooth" id="main-content">
+            <section class="flex flex-col gap-7 sm:gap-10 pb-32 pl-6 sm:pl-0" id="schedule-list"></section>
+        </main>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let isWeekendMode = false;
+        let completedTasks = {};
+        let expandedPhrases = null; 
+        let audioCtx = null;
+        let voices = []; // FIX: Added voices array initialization
+
+        const INITIAL_WEEKDAY = [
+            { id: 'wd_0700', time: '07:00', title: 'Wake Up & Breakfast', emoji: '🌅 🍞' },
+            { id: 'wd_0800', time: '08:00', title: 'Go to School', emoji: '🎒' },
+            { id: 'wd_0900', time: '09:00', title: 'Reading Time', emoji: '📚 🍌' },
+            { id: 'wd_1000', time: '10:00', title: 'Drawing Time', emoji: '🎨' },
+            { id: 'wd_1100', time: '11:00', title: 'Lunch Time', emoji: '🍱' },
+            { id: 'wd_1200', time: '12:00', title: 'Nap Time', emoji: '😴' },
+            { id: 'wd_1300', time: '13:00', title: 'Nap Time', emoji: '💤' },
+            { id: 'wd_1400', time: '14:00', title: 'Play Time', emoji: '⛹️‍♀️' },
+            { id: 'wd_1500', time: '15:00', title: 'Tea Time', emoji: '🍰' },
+            { id: 'wd_1600', time: '16:00', title: 'Play Time', emoji: '🚽' },
+            { id: 'wd_1630', time: '16:30', title: 'School Out & Play', emoji: '🎒 🚴🏻' },
+            { id: 'wd_1700', time: '17:00', title: 'Play Time', emoji: '🛝' },
+            { id: 'wd_1730', time: '17:30', title: 'Going Home', emoji: '🏡' },
+            { id: 'wd_1800', time: '18:00', title: 'Yummy Dinner', emoji: '🍲' },
+            { id: 'wd_1900', time: '19:00', title: 'Bath & Wash Up', emoji: '🛀' },
+            { id: 'wd_2000', time: '20:00', title: 'Fun with Mommy', emoji: '🧸 💃🏻' },
+            { id: 'wd_2100', time: '21:00', title: 'Nighty Night', emoji: '🌙' }
+        ];
+
+        const INITIAL_WEEKEND = [
+            { id: 'we_0700', time: '07:00', title: 'Wake Up!', emoji: '🌞' },
+            { id: 'we_0800', time: '08:00', title: 'Breakfast', emoji: '🥛' },
+            { id: 'we_0900', time: '09:00', title: 'Play Time', emoji: '🎢' },
+            { id: 'we_1000', time: '10:00', title: 'Play Time', emoji: '🎈' },
+            { id: 'we_1100', time: '11:00', title: 'Lunch', emoji: '🥗' },
+            { id: 'we_1200', time: '12:00', title: 'TV & Play', emoji: '📺' },
+            { id: 'we_1300', time: '13:00', title: 'Nap Time', emoji: '😴' },
+            { id: 'we_1400', time: '14:00', title: 'Nap Time', emoji: '💤' },
+            { id: 'we_1500', time: '15:00', title: 'Tea Time', emoji: '🍰' },
+            { id: 'we_1600', time: '16:00', title: 'Outdoor Play', emoji: '🌳' },
+            { id: 'we_1700', time: '17:00', title: 'Going Home', emoji: '🏠' },
+            { id: 'we_1800', time: '18:00', title: 'Dinner Time', emoji: '🥘' },
+            { id: 'we_1900', time: '19:00', title: 'Bath & Wash Up', emoji: '🛀' },
+            { id: 'we_2000', time: '20:00', title: 'Fun with Mommy', emoji: '🧸 💃🏻' },
+            { id: 'we_2100', time: '21:00', title: 'Sleepy Time', emoji: '🌃' }
+        ];
+
+        let WEEKDAY_SCHEDULE = JSON.parse(JSON.stringify(INITIAL_WEEKDAY));
+        let WEEKEND_SCHEDULE = JSON.parse(JSON.stringify(INITIAL_WEEKEND));
+
+        function getStartTime(timeStr) {
+            if (!timeStr) return 0;
+            const match = timeStr.match(/(\d{2}):(\d{2})/);
+            return match ? parseInt(match[1]) * 60 + parseInt(match[2]) : 0;
+        }
+
+        const CONVERSATIONS = {
+            'wd_0700': { mom: "Rise and shine! Let's eat your yummy toast.", kid: "Good morning! It smells so good!" },
+            'wd_0800': { mom: "Time for school! Grab your backpack.", kid: "I'm ready! Let's go!" },
+            'wd_0900': { mom: "Let's read a wonderful story book together.", kid: "I want to read about the big dinosaurs!" },
+            'wd_1000': { mom: "Time to draw something beautiful!", kid: "I will draw a rainbow for you!" },
+            'wd_1100': { mom: "Lunch time! Let's wash those little hands.", kid: "Scrub scrub scrub! I'm so hungry!" },
+            'wd_1200': { mom: "It's nap time. Let's recharge your energy.", kid: "See you when I wake up!" },
+            'wd_1300': { mom: "Still resting well, my sunshine.", kid: "Zzz... sweet dreams..." },
+            'wd_1400': { mom: "Time to move your body! Ready to play?", kid: "Look at me! I can jump so high!" },
+            'wd_1500': { mom: "Would you like some fruit and tea?", kid: "Yes, please! I love sweet apples!" },
+            'wd_1600': { mom: "Let's have some more fun before home.", kid: "Yay! Let's go to the slide!" },
+            'wd_1630': { mom: "School is over! Let's go ride your bike and play!", kid: "Yay! I love riding my bike!" },
+            'wd_1700': { mom: "Let's play on the slide for a while!", kid: "Wheee! This is so fun!" },
+            'wd_1730': { mom: "It's time to head back home now.", kid: "I'm coming! Let's see Daddy!" },
+            'wd_1800': { mom: "Dinner is served! Eat your vegetables.", kid: "Crunch crunch! They are so healthy!" },
+            'wd_1900': { mom: "Time for a bubbly bath!", kid: "Splash splash! Bubbles on my tummy!" },
+            'wd_2000': { mom: "Let's play together! What shall we do?", kid: "Let's dance with my teddy bear!" },
+            'wd_2100': { mom: "Time for bed. Sleep tight.", kid: "Good night, Mommy. I love you!" },
+            'we_0700': { mom: "Wake up, sunshine! It's a happy weekend.", kid: "Morning! Can we play together all day?" },
+            'we_0800': { mom: "Drink your milk, little one.", kid: "Slurp! It makes me strong!" },
+            'we_0900': { mom: "It's playtime! What toys do you want?", kid: "I want to build a giant castle!" },
+            'we_1000': { mom: "Your castle is getting so big!", kid: "Look! It has a tall tower now!" },
+            'we_1100': { mom: "Time for a healthy lunch together.", kid: "I like eating with you, Mommy!" },
+            'we_1200': { mom: "You can watch your favorite cartoon now.", kid: "Yay! This is my favorite part!" },
+            'we_1300': { mom: "Nap time, sunshine. Have a nice rest.", kid: "Sweet dreams during my nap!" },
+            'we_1400': { mom: "Resting makes you grow tall.", kid: "I'm still a little bit sleepy..." },
+            'we_1500': { mom: "Time for a little cake and juice.", kid: "Yummy! Thank you, Mommy!" },
+            'we_1600': { mom: "Let's go outside and play in the garden!", kid: "I want to catch the butterflies!" },
+            'we_1700': { mom: "The sun is going down. Time to go home.", kid: "Okay! I'm hungry for dinner!" },
+            'we_1800': { mom: "Dinner is ready! It's your favorite soup.", kid: "Yummy! It smells so good!" },
+            'we_1900': { mom: "Time for a bubbly bath!", kid: "Splash splash! Bubbles on my tummy!" },
+            'we_2000': { mom: "Let's play together! What shall we do?", kid: "Let's dance with my teddy bear!" },
+            'we_2100': { mom: "Bedtime, my sleepyhead. I love you.", kid: "Good night! Don't forget my kiss!" }
+        };
+
+        function init() {
+            const today = new Date().toLocaleDateString('en-CA');
+            const saved = localStorage.getItem(`routine_${today}`);
+            if (saved) completedTasks = JSON.parse(saved);
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // FIX: Load voices for Speech Synthesis
+            if ('speechSynthesis' in window) {
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
+                }
+                voices = speechSynthesis.getVoices();
+            }
+
+            render();
+        }
+
+        function playTickSound() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } catch (e) {}
+        }
+
+        function setStep(val) {
+            playTickSound();
+            currentStep = val;
+            document.querySelectorAll('.unit-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`step-${val}`).classList.add('active');
+        }
+
+        function resetAllTimes() {
+            playTickSound();
+            completedTasks = {};
+            localStorage.removeItem(`routine_${new Date().toLocaleDateString('en-CA')}`);
+            WEEKDAY_SCHEDULE = JSON.parse(JSON.stringify(INITIAL_WEEKDAY));
+            WEEKEND_SCHEDULE = JSON.parse(JSON.stringify(INITIAL_WEEKEND));
+            render();
+        }
+
+        function getVoicesByRole() {
+            const enVoices = voices.filter(v => v.lang.startsWith('en'));
+            const femaleNames = ['samantha', 'zira', 'ava', 'victoria', 'karen', 'premium', 'tessa', 'moira'];
+            const femaleVoices = enVoices.filter(v => femaleNames.some(name => v.name.toLowerCase().includes(name)));
+            const list = femaleVoices.length >= 2 ? femaleVoices : enVoices;
+            return { mom: list[0] || null, kid: list.length > 1 ? list[list.length - 1] : (list[0] || null) };
+        }
+
+        function speak(text, role) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel(); 
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            
+            const chosenVoices = getVoicesByRole();
+            const voice = (role === 'mom') ? chosenVoices.mom : chosenVoices.kid;
+            if (voice) utterance.voice = voice;
+            
+            if (role === 'mom') {
+                utterance.pitch = 0.9;  
+                utterance.rate = 0.95;
+            } else {
+                utterance.pitch = 1.6;  
+                utterance.rate = 1.15;
+            }
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function adjustTime(id, multiplier, event) {
+            if (event) event.stopPropagation();
+            playTickSound(); 
+            const delta = multiplier * currentStep;
+            const schedule = isWeekendMode ? WEEKEND_SCHEDULE : WEEKDAY_SCHEDULE;
+            const item = schedule.find(i => i.id === id);
+            
+            item.time = item.time.replace(/(\d{2}):(\d{2})/g, (match, h, m) => {
+                let totalMin = parseInt(h) * 60 + parseInt(m) + delta;
+                if (totalMin < 0) totalMin += 1440;
+                if (totalMin >= 1440) totalMin -= 1440;
+                const newH = Math.floor(totalMin / 60).toString().padStart(2, '0');
+                const newM = (totalMin % 60).toString().padStart(2, '0');
+                return `${newH}:${newM}`;
+            });
+            render();
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('header-time').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('header-date').textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const headerDay = document.getElementById('header-day');
+            headerDay.textContent = weekDays[now.getDay()];
+            
+            if (isWeekendMode) {
+                headerDay.className = "text-[7px] sm:text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border-[1.5px] border-slate-900 bg-rose-200 text-rose-800 w-fit";
+            } else {
+                headerDay.className = "text-[7px] sm:text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border-[1.5px] border-slate-900 bg-emerald-200 text-emerald-800 w-fit";
+            }
+            render();
+        }
+
+        function toggleWeekendMode() {
+            playTickSound();
+            isWeekendMode = !isWeekendMode;
+            const btn = document.getElementById('weekend-toggle');
+            const icon = document.getElementById('toggle-icon');
+            
+            if (isWeekendMode) {
+                btn.className = "flex items-center gap-1.5 px-3 py-2 rounded-xl border-[3px] border-slate-900 card-transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[3.5px_3.5px_0_0_#000] bg-rose-100 shrink-0 ml-1 active:bg-rose-200";
+                icon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-900"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"></path><path d="m9 11 3 3 8-8"></path></svg>`;
+                document.body.style.backgroundColor = "#F8ECEE";
+            } else {
+                btn.className = "flex items-center gap-1.5 px-3 py-2 rounded-xl border-[3px] border-slate-900 card-transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[3.5px_3.5px_0_0_#000] bg-emerald-100 shrink-0 ml-1 active:bg-emerald-200";
+                icon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-900"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`;
+                document.body.style.backgroundColor = "#F0F2F0";
+            }
+            render();
+        }
+
+        function togglePhrases(id, e) {
+            if (e) e.stopPropagation(); 
+            playTickSound();
+            expandedPhrases = expandedPhrases === id ? null : id; 
+            render();
+        }
+
+        function toggleTask(id, e) {
+            if (e) e.stopPropagation(); 
+            playTickSound(); 
+            completedTasks[id] = completedTasks[id] ? null : true;
+            localStorage.setItem(`routine_${new Date().toLocaleDateString('en-CA')}`, JSON.stringify(completedTasks));
+            render();
+        }
+
+        function render() {
+            const list = document.getElementById('schedule-list');
+            if (!list) return;
+            const schedule = isWeekendMode ? WEEKEND_SCHEDULE : WEEKDAY_SCHEDULE;
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+
+            let highlightedIdx = -1;
+            
+            let originalActiveIdx = -1;
+            const initialSchedule = isWeekendMode ? INITIAL_WEEKEND : INITIAL_WEEKDAY;
+            for (let i = 0; i < initialSchedule.length; i++) {
+                let start = getStartTime(initialSchedule[i].time);
+                let next = initialSchedule[i+1] ? getStartTime(initialSchedule[i+1].time) : 1440;
+                if (nowMin >= start && nowMin < next) {
+                    originalActiveIdx = i;
+                    break;
+                }
+            }
+
+            if (originalActiveIdx !== -1) {
+                let foundPulledTask = false;
+                for (let i = schedule.length - 1; i > originalActiveIdx; i--) {
+                    if (getStartTime(schedule[i].time) <= nowMin) {
+                        highlightedIdx = i;
+                        foundPulledTask = true;
+                        break;
+                    }
+                }
+                if (!foundPulledTask) {
+                    if (getStartTime(schedule[originalActiveIdx].time) <= nowMin) {
+                        highlightedIdx = originalActiveIdx;
+                    }
+                }
+            }
+
+            let html = '';
+            schedule.forEach((item, idx) => {
+                const isCompleted = !!completedTasks[item.id];
+                const isCurrent = idx === highlightedIdx;
+                const isExpanded = expandedPhrases === item.id;
+                const conv = CONVERSATIONS[item.id];
+
+                let cardClass = `flex items-stretch w-full card-transition border-4 border-slate-900 rounded-[28px] sm:rounded-[40px] overflow-hidden relative ${isCompleted ? 'completed' : ''} z-20 min-h-[90px] sm:min-h-[130px]`;
+                
+                let dynamicState = isCurrent ? `bg-${isWeekendMode?'rose-400':'emerald-500'} active-shadow-lg` : `bg-white active-shadow`;
+                
+                let emojiBoxClass = `w-[20%] sm:w-[22%] flex items-center justify-center shrink-0 ${isCurrent ? 'bg-white/20 backdrop-blur-md' : 'bg-slate-50/30'}`;
+                let textContentClass = `flex-1 pl-2 sm:pl-3 pr-4 sm:pr-8 py-4 flex flex-col justify-center min-w-0`;
+                let timeStyle = isCurrent ? `text-white text-lg sm:text-3xl font-black drop-shadow-sm whitespace-nowrap` : `text-slate-900 text-lg sm:text-3xl font-black whitespace-nowrap`;
+                let titleStyle = isCurrent ? `text-white/90 text-[11px] sm:text-lg font-bold truncate` : `text-slate-400 text-[11px] sm:text-lg font-bold truncate`;
+                
+                let checkBtnBg = isCompleted ? (isWeekendMode ? 'bg-rose-600' : 'bg-emerald-600') : 'bg-white';
+                const sideTabBg = isWeekendMode ? (isCurrent ? 'bg-rose-600 border-rose-900' : 'bg-rose-200') : (isCurrent ? 'bg-emerald-600 border-emerald-900' : 'bg-emerald-100');
+
+                html += `
+                    <div class="flex flex-col w-full relative">
+                        <div class="relative w-full z-20">
+                            <div onclick="togglePhrases('${item.id}', event)" class="phrase-side-tab ${sideTabBg}">
+                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${isCurrent ? 'white' : 'black'}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="${isExpanded ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6'}" />
+                                 </svg>
+                            </div>
+
+                            <div class="${cardClass} ${dynamicState}">
+                                <div class="${emojiBoxClass}">
+                                    <span class="text-2xl sm:text-5xl leading-none block select-none ${isCurrent ? 'animate-bounce-fluid' : ''}">${item.emoji}</span>
+                                </div>
+                                <div class="${textContentClass}">
+                                    <span class="${timeStyle} tabular-nums leading-none mb-1">${item.time}</span>
+                                    <h5 class="${titleStyle}">${item.title}</h5>
+                                    ${isCompleted ? '<span class="mt-2 text-[8px] sm:text-[10px] w-fit font-black tracking-widest px-1.5 py-0.5 bg-black text-white rounded italic uppercase shrink-0">Done</span>' : ''}
+                                </div>
+                                <div class="flex items-center gap-4 sm:gap-8 pr-3 sm:pr-8 shrink-0">
+                                    <div class="flex items-center gap-1 sm:gap-2">
+                                        <button onclick="adjustTime('${item.id}', -1, event)" class="round-time-btn ${isWeekendMode ? 'active:bg-rose-200' : 'active:bg-emerald-200'}">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" class="sm:w-5 sm:h-5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        </button>
+                                        <button onclick="adjustTime('${item.id}', 1, event)" class="round-time-btn ${isWeekendMode ? 'active:bg-rose-200' : 'active:bg-emerald-200'}">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" class="sm:w-5 sm:h-5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        </button>
+                                    </div>
+                                    <div onclick="toggleTask('${item.id}', event)" class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center border-[3px] sm:border-4 border-slate-900 ${checkBtnBg} shadow-[2px_2px_0_0_#000] cursor-pointer card-transition shrink-0">
+                                        ${isCompleted ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="5" class="sm:w-10 sm:h-10"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="phrases-container ${isExpanded ? 'expanded' : ''}">
+                            <div class="px-0 pt-0 pb-2">
+                                <div class="${isWeekendMode?'bg-rose-50':'bg-emerald-50'} border-4 border-slate-900 border-dashed rounded-[24px] p-4 sm:p-8 space-y-6 overflow-hidden">
+                                    <div class="flex items-start gap-3 sm:gap-5">
+                                        <span class="text-xl sm:text-4xl shrink-0 mt-1">👩</span>
+                                        <div class="flex flex-col gap-2 min-w-0">
+                                            <button onclick="speak('${conv.mom.replace(/'/g, "\\'")}', 'mom')" class="w-fit p-1.5 sm:p-2.5 rounded-lg border-2 border-slate-900 active:translate-y-0.5 bg-white shadow-[2px_2px_0_0_#000]">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-rose-600 sm:w-6 sm:h-6"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                            </button>
+                                            <p class="text-sm sm:text-xl font-bold text-slate-800 italic leading-snug break-words">"${conv.mom}"</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3 sm:gap-5 justify-end text-right">
+                                        <div class="flex flex-col items-end gap-2 min-w-0">
+                                            <button onclick="speak('${conv.kid.replace(/'/g, "\\'")}', 'kid')" class="w-fit p-1.5 sm:p-2.5 rounded-lg border-2 border-slate-900 active:translate-y-0.5 bg-white shadow-[2px_2px_0_0_#000]">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-blue-600 sm:w-6 sm:h-6"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                            </button>
+                                            <p class="text-sm sm:text-xl font-bold text-slate-800 italic leading-snug break-words">"${conv.kid}"</p>
+                                        </div>
+                                        <span class="text-xl sm:text-4xl shrink-0 mt-1">👧🏻</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
